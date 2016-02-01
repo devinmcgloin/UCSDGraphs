@@ -9,8 +9,7 @@ package roadgraph;
 import geography.GeographicPoint;
 import util.GraphLoader;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -22,13 +21,20 @@ import java.util.function.Consumer;
  */
 public class MapGraph {
     //TODO: Add your member variables here in WEEK 2
-
+    private int numEdges;
+    private int numVert;
+    private Hashtable<GeographicPoint, List<GeographicPoint>> map;
+    private HashSet<GeographicPoint> vertices;
 
     /**
      * Create a new empty MapGraph
      */
     public MapGraph() {
         // TODO: Implement in this constructor in WEEK 2
+        numEdges = 0;
+        numVert = 0;
+        map = new Hashtable<GeographicPoint, List<GeographicPoint>>();
+        vertices = new HashSet<GeographicPoint>();
     }
 
     public static void main(String[] args) {
@@ -37,6 +43,8 @@ public class MapGraph {
         System.out.print("DONE. \nLoading the map...");
         GraphLoader.loadRoadMap("data/testdata/simpletest.map", theMap);
         System.out.println("DONE.");
+
+        System.out.println(theMap);
 
         // You can use this method for testing.
 
@@ -63,7 +71,7 @@ public class MapGraph {
      */
     public int getNumVertices() {
         //TODO: Implement this method in WEEK 2
-        return 0;
+        return numVert;
     }
 
     /**
@@ -72,7 +80,7 @@ public class MapGraph {
      */
     public Set<GeographicPoint> getVertices() {
         //TODO: Implement this method in WEEK 2
-        return null;
+        return (Set<GeographicPoint>) vertices.clone();
     }
 
     /**
@@ -81,7 +89,7 @@ public class MapGraph {
      */
     public int getNumEdges() {
         //TODO: Implement this method in WEEK 2
-        return 0;
+        return numEdges;
     }
 
     /** Add a node corresponding to an intersection at a Geographic Point
@@ -93,7 +101,13 @@ public class MapGraph {
      */
     public boolean addVertex(GeographicPoint location) {
         // TODO: Implement this method in WEEK 2
-        return false;
+        if(location == null || vertices.contains(location))
+            return false;
+
+        vertices.add(location);
+        map.put(location, new LinkedList<>());
+        return true;
+
     }
 
     /**
@@ -112,6 +126,15 @@ public class MapGraph {
                         String roadType, double length) throws IllegalArgumentException {
 
         //TODO: Implement this method in WEEK 2
+
+        if(!vertices.contains(from) || !vertices.contains(to))
+            throw new IllegalArgumentException("Arguments to addEdge did not exist in the graph.");
+        if(length < 0)
+            throw new IllegalArgumentException("length of edge was negative");
+        if(roadName == null || roadType == null)
+            throw new IllegalArgumentException("Labels must not be null");
+
+        map.get(from).add(to);
 
     }
 
@@ -140,6 +163,35 @@ public class MapGraph {
     public List<GeographicPoint> bfs(GeographicPoint start,
                                      GeographicPoint goal, Consumer<GeographicPoint> nodeSearched) {
         // TODO: Implement this method in WEEK 2
+        HashSet<GeographicPoint> visted = new HashSet<>();
+        LinkedList<GeographicPoint> queue = new LinkedList<>();
+        HashMap<GeographicPoint, GeographicPoint> path = new HashMap<>();
+
+        visted.add(start);
+        queue.offer(start);
+
+        while(!queue.isEmpty()){
+            GeographicPoint current = queue.poll();
+            if(current == goal) {
+                LinkedList<GeographicPoint> finalPath = new LinkedList<>();
+                finalPath.add(start);
+                GeographicPoint g = path.get(start);
+                while(g != goal){
+                    finalPath.add(g);
+                    g = path.get(g);
+                }
+                return finalPath;
+            }
+            for(GeographicPoint neigh : map.get(current)){
+                if(visted.contains(neigh))
+                    continue;
+                visted.add(neigh);
+                path.put(current, neigh);
+                queue.offer(neigh);
+            }
+
+
+        }
 
         // Hook for visualization.  See writeup.
         //nodeSearched.accept(next.getLocation());
@@ -212,4 +264,10 @@ public class MapGraph {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return "MapGraph{" +
+                "vertices=" + vertices +
+                '}';
+    }
 }

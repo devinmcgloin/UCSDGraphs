@@ -46,7 +46,7 @@ public class MapGraph {
 
         System.out.println(theMap);
 
-        GeographicPoint start = new GeographicPoint(4,0);
+        GeographicPoint start = new GeographicPoint(7,3);
         GeographicPoint end = new GeographicPoint(8,-1);
 
         System.out.println(theMap.bfs(start,end));
@@ -111,6 +111,7 @@ public class MapGraph {
 
         vertices.add(location);
         map.put(location, new LinkedList<>());
+        numVert++;
         return true;
 
     }
@@ -139,8 +140,9 @@ public class MapGraph {
         if(roadName == null || roadType == null)
             throw new IllegalArgumentException("Labels must not be null");
 
+        numEdges++;
         map.get(from).add(to);
-        map.get(to).add(from);
+//        map.get(to).add(from);
 
     }
 
@@ -169,6 +171,11 @@ public class MapGraph {
     public List<GeographicPoint> bfs(GeographicPoint start,
                                      GeographicPoint goal, Consumer<GeographicPoint> nodeSearched) {
         // TODO: Implement this method in WEEK 2
+        if(start.equals(goal)) {
+            List<GeographicPoint> list = new LinkedList<>();
+            list.add(goal);
+            return list;
+        }
         HashSet<GeographicPoint> visted = new HashSet<>();
         LinkedList<GeographicPoint> queue = new LinkedList<>();
         HashMap<GeographicPoint, GeographicPoint> path = new HashMap<>();
@@ -181,20 +188,20 @@ public class MapGraph {
             System.out.println(current);
             if(current.equals( goal)) {
                 LinkedList<GeographicPoint> finalPath = new LinkedList<>();
-                finalPath.add(start);
-                GeographicPoint g = path.get(start);
-                while(!g.equals(goal)){
-                    finalPath.add(g);
+                finalPath.add(goal);
+                GeographicPoint g = path.get(goal);
+                while(!g.equals(start)){
+                    finalPath.addFirst(g);
                     g = path.get(g);
                 }
-                finalPath.add(goal);
+                finalPath.addFirst(start);
                 return finalPath;
             }
             for(GeographicPoint neigh : map.get(current)){
                 if(visted.contains(neigh))
                     continue;
                 visted.add(neigh);
-                path.put(current, neigh);
+                path.put(neigh, current);
                 queue.offer(neigh);
             }
 
